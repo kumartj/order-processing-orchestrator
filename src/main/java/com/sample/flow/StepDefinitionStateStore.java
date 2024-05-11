@@ -1,6 +1,4 @@
-package com.sample.saga;
-
-import com.sample.order.orderprocess.OrderProcessingState;
+package com.sample.flow;
 
 /**
  * A state Store during the execution of the step definition

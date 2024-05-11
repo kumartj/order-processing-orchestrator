@@ -5,7 +5,15 @@ import java.util.List;
 
 public class FlowDefinition<T> {
 
-    //Builder Pattern
+    private final List<Step<T>> steps;
+
+    public FlowDefinition(List<Step<T>> steps) {
+        this.steps = steps;
+    }
+
+    public List<Step<T>> getSteps() {
+        return steps;
+    }
 
     public static class FlowDefinitionBuilder<T> {
 
@@ -13,7 +21,7 @@ public class FlowDefinition<T> {
 
 
         public FlowDefinition<T> build(){
-            return new FlowDefinition<>();
+            return new FlowDefinition<>(steps);
         }
 
         public void addStep(Step<T> tStep) {

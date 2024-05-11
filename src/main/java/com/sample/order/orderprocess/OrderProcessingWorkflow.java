@@ -1,27 +1,35 @@
 package com.sample.order.orderprocess;
 
+import com.sample.flow.FlowDefinition;
+import com.sample.flow.SimpleFlowDsl;
+import com.sample.order.exception.InventoryHoldException;
+import com.sample.order.exception.PaymentProcessingException;
 import com.sample.order.service.InventoryService;
 import com.sample.order.service.NotificationService;
 import com.sample.order.service.PaymentProcessingService;
-import com.sample.saga.Step;
-import com.sample.saga.StepDefinition;
 
 
-public class OrderProcessingSaga {
+public class OrderProcessingWorkflow  implements  SimpleFlowDsl<OrderProcessingData> {
 
     private final InventoryService inventoryService;
     private final PaymentProcessingService paymentProcessingService;
 
     private final NotificationService notificationService;
 
-    private final StepDefinition.StepDefinitionBuilder<OrderProcessingData> any = new StepDefinition.StepDefinitionBuilder<OrderProcessingData>();
+    private final FlowDefinition<OrderProcessingData> orderProcessingDataFlowDefinition =
+            step()
+                    .invokeFunction(this::holdInventory)
+                    .onreply(InventoryHoldException.class, this::clearInventory)
+            .step()
+                    .invokeFunction(this::processPayment)
+                    .onreply(PaymentProcessingException.class, this::clearInventory)
+            .step()
+                    .invokeFunction(this::sendNotification)
+            .build();
 
-    private final Step<OrderProcessingData> orderProcessingSagaStepDefinition
-            =  StepDefinition.StepDefinitionBuilder.step(1).build();
 
 
-
-    public OrderProcessingSaga(InventoryService inventoryService, PaymentProcessingService paymentProcessingService, NotificationService notificationService) throws Exception {
+    public OrderProcessingWorkflow(InventoryService inventoryService, PaymentProcessingService paymentProcessingService, NotificationService notificationService)  {
         this.inventoryService = inventoryService;
         this.paymentProcessingService = paymentProcessingService;
         this.notificationService = notificationService;
@@ -36,19 +44,19 @@ public class OrderProcessingSaga {
        // state.setInventoryHoldId(inventoryHoldId);
     }
 
-    private void clearInventory(OrderProcessingData data, OrderProcessingState state) throws  InterruptedException {
-        inventoryService.clearHoldProduct(data.getCustomerId(), data.getProductId(), state.getInventoryHoldId());
+    private void clearInventory(OrderProcessingData data)  {
+        inventoryService.clearHoldProduct(data.getCustomerId(), data.getProductId()," state.getInventoryHoldId()");
     }
 
-    private void processPayment(OrderProcessingData data, OrderProcessingState state) {
+    private void processPayment(OrderProcessingData data) {
         paymentProcessingService.processPayment(data.getCustomerId(), data.getAmount());
     }
 
-    private void sendNotification(OrderProcessingData data, OrderProcessingState state) {
+    private void sendNotification(OrderProcessingData data) {
         notificationService.notify(data.getCustomerId());
     }
 
-    public StepDefinition<OrderProcessingSaga> getStepDefinition() {
-        return orderProcessingSagaStepDefinition;
+    public FlowDefinition<OrderProcessingData> getFlowDefinition() {
+        return orderProcessingDataFlowDefinition;
     }
 }
