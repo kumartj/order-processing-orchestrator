@@ -1,6 +1,6 @@
 package com.sample.order;
 
-import com.sample.order.orderprocess.OrderProcessingWorkflow;
+import com.sample.order.orderprocess.CreateOrderProcessingFlow;
 import com.sample.order.service.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,13 +30,13 @@ public class OrderProcessingConfig {
 
 
     @Bean("OrderProcessingWorkflow")
-    public OrderProcessingWorkflow orderProcessingWorkflow(InventoryService inventoryService, PaymentProcessingService paymentProcessingService,
-                                                           NotificationService notificationService) {
-        return new OrderProcessingWorkflow(inventoryService, paymentProcessingService, notificationService );
+    public CreateOrderProcessingFlow orderProcessingWorkflow(InventoryService inventoryService, PaymentProcessingService paymentProcessingService,
+                                                             NotificationService notificationService) {
+        return new CreateOrderProcessingFlow(inventoryService, paymentProcessingService, notificationService );
     }
 
     @Bean
-    public CreateOrderService createOrderService(OrderProcessingWorkflow processingWorkflow) {
+    public CreateOrderService createOrderService(CreateOrderProcessingFlow processingWorkflow) {
         return new CreateOrderService(processingWorkflow);
     }
 }

@@ -1,6 +1,6 @@
 package com.sample.order.exception;
 
-public class PaymentProcessingException extends Exception {
+public class PaymentProcessingException extends RuntimeException {
 
     private String message;
 

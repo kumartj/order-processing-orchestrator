@@ -9,14 +9,14 @@ import com.sample.order.service.NotificationService;
 import com.sample.order.service.PaymentProcessingService;
 
 
-public class OrderProcessingWorkflow  implements  SimpleFlowDsl<OrderProcessingData> {
+public class CreateOrderProcessingFlow implements  SimpleFlowDsl<OrderProcessingData> {
 
     private final InventoryService inventoryService;
     private final PaymentProcessingService paymentProcessingService;
 
     private final NotificationService notificationService;
 
-    private final FlowDefinition<OrderProcessingData> orderProcessingDataFlowDefinition =
+    private final FlowDefinition<OrderProcessingData> createOrderFlowDefinition =
             step()
                     .invokeFunction(this::holdInventory)
                     .onreply(InventoryHoldException.class, this::clearInventory)
@@ -24,19 +24,17 @@ public class OrderProcessingWorkflow  implements  SimpleFlowDsl<OrderProcessingD
                     .invokeFunction(this::processPayment)
                     .onreply(PaymentProcessingException.class, this::clearInventory)
             .step()
-                    .invokeFunction(this::sendNotification)
+                    .invokeAsyncFunction(this::sendNotification)
+            .step()
+                    .invokeFunction(this::clearInventory)
             .build();
 
 
 
-    public OrderProcessingWorkflow(InventoryService inventoryService, PaymentProcessingService paymentProcessingService, NotificationService notificationService)  {
+    public CreateOrderProcessingFlow(InventoryService inventoryService, PaymentProcessingService paymentProcessingService, NotificationService notificationService)  {
         this.inventoryService = inventoryService;
         this.paymentProcessingService = paymentProcessingService;
         this.notificationService = notificationService;
-    }
-
-    private void createOrder(OrderProcessingData data) {
-
     }
 
     private void holdInventory(OrderProcessingData data)  {
@@ -57,6 +55,6 @@ public class OrderProcessingWorkflow  implements  SimpleFlowDsl<OrderProcessingD
     }
 
     public FlowDefinition<OrderProcessingData> getFlowDefinition() {
-        return orderProcessingDataFlowDefinition;
+        return createOrderFlowDefinition;
     }
 }

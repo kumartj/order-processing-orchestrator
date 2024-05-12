@@ -1,24 +1,38 @@
 package com.sample.flow;
 
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class FlowManager {
 
-    public static <T> void processDefinition(T data, FlowDefinition<T> flowDefinition) {
-        for (Step<T> step : flowDefinition.getSteps()) {
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
+    public static <T> void execute(FlowDefinition<T> flowDefinition, T data) {
+        for (Step<T> step : flowDefinition.getSteps()) {
             try {
-                step.getLocalFunction().accept(data);
+                if ((step instanceof AsyncStep<T>)) {
+                    executorService.submit(() -> step.getLocalFunction().accept(data));
+                } else {
+                    step.getLocalFunction().accept(data);
+
+                }
             } catch (Exception e) {
+                if(step instanceof AsyncStep<T>){
+                    throw e;
+                }
+                //step is a simple step
                 if (step.getReplyHandler().isPresent()) {
-                    Map<Class<? extends Exception>, Consumer<T>> classConsumerMap = step.getReplyHandler().get();
-                    System.out.println("e.getClass() = " + e.getClass());
-                    Consumer<T> replyHandler = classConsumerMap.get(e.getClass());
-                    if (replyHandler != null) replyHandler.accept(data);
+                    Consumer<T> consumerReplyHandler = step.getReplyHandler()
+                            .get()
+                            .get(e.getClass());
+                    if (consumerReplyHandler != null) {
+                        consumerReplyHandler.accept(data);
+                    } else {
+                        throw e;
+                    }
                 }
             }
-            System.out.println("step = " + step);
         }
     }
 

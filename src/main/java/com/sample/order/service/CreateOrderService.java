@@ -3,14 +3,16 @@ package com.sample.order.service;
 import com.sample.flow.FlowManager;
 import com.sample.order.model.OrderRequest;
 import com.sample.order.orderprocess.OrderProcessingData;
-import com.sample.order.orderprocess.OrderProcessingWorkflow;
+import com.sample.order.orderprocess.CreateOrderProcessingFlow;
+
+import static com.sample.flow.FlowManager.execute;
 
 public class CreateOrderService {
 
-    private final OrderProcessingWorkflow orderProcessingWorkflow;
+    private final CreateOrderProcessingFlow createOrderProcessFlow;
 
-    public CreateOrderService(OrderProcessingWorkflow orderProcessingWorkflow) {
-        this.orderProcessingWorkflow = orderProcessingWorkflow;
+    public CreateOrderService(CreateOrderProcessingFlow createOrderProcessFlow) {
+        this.createOrderProcessFlow = createOrderProcessFlow;
     }
 
 
@@ -18,13 +20,13 @@ public class CreateOrderService {
 
         validateRequest(request);
 
-        FlowManager.processDefinition(map(request), orderProcessingWorkflow.getFlowDefinition());
+        execute(createOrderProcessFlow.getFlowDefinition(), map(request));
 
     }
 
     private void validateRequest(OrderRequest request) {
         //preform any validation
-        //ideally validation should be performed as early as possible
+
     }
 
     public OrderProcessingData map(OrderRequest request) {
