@@ -1,6 +1,6 @@
 This is a sample code to show Orchestrator Saga pattern
 
-Key Functionality or requirement on which this is build
+Key requirement on which this is build
 
 - An Order request is generated from the customer
 - we need to hold the product in the inventory 
