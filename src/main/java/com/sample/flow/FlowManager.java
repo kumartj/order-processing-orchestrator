@@ -28,10 +28,9 @@ public class FlowManager {
                             .get(e.getClass());
                     if (consumerReplyHandler != null) {
                         consumerReplyHandler.accept(data);
-                    } else {
-                        throw e;
                     }
                 }
+                throw e;
             }
         }
     }
