@@ -25,8 +25,6 @@ public class CreateOrderProcessingFlow implements  SimpleFlowDsl<OrderProcessing
                     .onreply(PaymentProcessingException.class, this::clearInventory)
             .step()
                     .invokeAsyncFunction(this::sendNotification)
-            .step()
-                    .invokeFunction(this::clearInventory)
             .build();
 
 
